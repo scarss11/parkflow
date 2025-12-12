@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - ParkFlow</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <i class="fas fa-square-parking sidebar-logo-icon"></i>
+                <span class="sidebar-logo-text">ParkFlow</span>
+            </div>
+            <div class="sidebar-user">
+                <div class="sidebar-user-avatar"><i class="fas fa-user"></i></div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name" id="userName">Usuario</div>
+                    <div class="sidebar-user-role" id="userRole">Rol</div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-nav-section">MENÚ PRINCIPAL</div>
+                <a href="dashboard.html" class="sidebar-nav-item" data-page="dashboard">
+                    <i class="fas fa-home"></i><span>Dashboard</span>
+                </a>
+                <div class="sidebar-nav-section">OPERACIONES</div>
+                <a href="entrada.html" class="sidebar-nav-item" data-page="entrada">
+                    <i class="fas fa-car-side"></i><span>Registrar Entrada</span>
+                </a>
+                <a href="salida.html" class="sidebar-nav-item" data-page="salida">
+                    <i class="fas fa-right-from-bracket"></i><span>Registrar Salida</span>
+                </a>
+                <a href="activos.html" class="sidebar-nav-item" data-page="activos">
+                    <i class="fas fa-list-check"></i><span>Vehículos Activos</span>
+                </a>
+                <a href="cupos.html" class="sidebar-nav-item" data-page="cupos">
+                    <i class="fas fa-square-parking"></i><span>Consultar Cupos</span>
+                </a>
+                <div class="sidebar-nav-section admin-only">ADMINISTRACIÓN</div>
+                <a href="tarifas.html" class="sidebar-nav-item admin-only" data-page="tarifas">
+                    <i class="fas fa-tags"></i><span>Gestión de Tarifas</span>
+                </a>
+                <a href="usuarios.html" class="sidebar-nav-item admin-only" data-page="usuarios">
+                    <i class="fas fa-users"></i><span>Gestión de Usuarios</span>
+                </a>
+                <a href="reportes.html" class="sidebar-nav-item admin-only active" data-page="reportes">
+                    <i class="fas fa-chart-bar"></i><span>Reportes</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button onclick="toggleSidebar()" class="sidebar-toggle-btn">
+                    <i class="fas fa-bars"></i><span>Colapsar</span>
+                </button>
+                <button onclick="logout()" class="sidebar-logout-btn">
+                    <i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="topbar">
+                <div>
+                    <div class="topbar-title">📊 Reportes y Estadísticas</div>
+                    <div class="topbar-subtitle">Análisis de ingresos y operaciones</div>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-filter"></i> Filtros de Búsqueda
+                        </div>
+                    </div>
+                    <form id="filtrosForm" style="display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 16px; align-items: end;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Fecha Inicio</label>
+                            <input type="date" id="fechaInicio" class="form-input" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Fecha Fin</label>
+                            <input type="date" id="fechaFin" class="form-input" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                        <button type="button" onclick="cargarReporteHoy()" class="btn btn-secondary">
+                            <i class="fas fa-calendar-day"></i> Hoy
+                        </button>
+                    </form>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-label">Total Ingresos</div>
+                        <div class="stat-value" id="totalIngresos">$0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-car"></i></div>
+                        <div class="stat-label">Vehículos Atendidos</div>
+                        <div class="stat-value" id="totalVehiculos">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+                        <div class="stat-label">Tiempo Promedio</div>
+                        <div class="stat-value" id="tiempoPromedio">0 min</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><i class="fas fa-chart-line"></i></div>
+                        <div class="stat-label">Ticket Promedio</div>
+                        <div class="stat-value" id="ticketPromedio">$0</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas fa-chart-pie"></i> Ingresos por Tipo de Vehículo
+                            </div>
+                        </div>
+                        <div id="ingresosPorTipo">
+                            <div class="loading"><i class="fas fa-spinner"></i> Selecciona un rango de fechas</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas fa-chart-bar"></i> Vehículos por Tipo
+                            </div>
+                        </div>
+                        <div id="vehiculosPorTipo">
+                            <div class="loading"><i class="fas fa-spinner"></i> Selecciona un rango de fechas</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-table"></i> Historial de Transacciones
+                        </div>
+                    </div>
+                    <div id="tablaHistorial">
+                        <p style="text-align: center; padding: 40px; color: var(--gray-600);">Selecciona un rango de fechas para ver el historial</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        async function cargarReporte(fechaInicio, fechaFin) {
+            try {
+                const token = localStorage.getItem('parking_token');
+                const res = await fetch(
+                    `${API_URL}/reportes/ingresos?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+                const data = await res.json();
+
+                if (data.success) {
+                    actualizarEstadisticas(data.reporte);
+                    mostrarIngresosPorTipo(data.reporte.por_tipo || []);
+                    mostrarVehiculosPorTipo(data.reporte.por_tipo || []);
+                }
+
+                await cargarHistorial(fechaInicio, fechaFin);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function actualizarEstadisticas(reporte) {
+            document.getElementById('totalIngresos').textContent = formatearMonto(reporte.total_ingresos || 0);
+            document.getElementById('totalVehiculos').textContent = reporte.total_vehiculos || 0;
+            document.getElementById('tiempoPromedio').textContent = reporte.tiempo_promedio || '0 min';
+            document.getElementById('ticketPromedio').textContent = formatearMonto(reporte.ticket_promedio || 0);
+        }
+
+        function mostrarIngresosPorTipo(porTipo) {
+            const container = document.getElementById('ingresosPorTipo');
+
+            if (porTipo.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--gray-600);">No hay datos</p>';
+                return;
+            }
+
+            const total = porTipo.reduce((sum, t) => sum + parseFloat(t.total_ingresos || 0), 0);
+
+            container.innerHTML = porTipo.map(t => {
+                const porcentaje = total > 0 ? (parseFloat(t.total_ingresos) / total * 100) : 0;
+                const color = t.tipo_vehiculo === 'Sedán' ? 'var(--blue)' :
+                             t.tipo_vehiculo === 'Camioneta' ? 'var(--orange)' : 'var(--green)';
+
+                return `
+                    <div style="padding: 16px; border-bottom: 1px solid var(--gray-200);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <i class="fas fa-${t.tipo_vehiculo === 'Sedán' ? 'car' : t.tipo_vehiculo === 'Camioneta' ? 'truck-pickup' : 'motorcycle'}" 
+                                   style="font-size: 20px; color: ${color};"></i>
+                                <span style="font-weight: 600;">${t.tipo_vehiculo}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 20px; font-weight: 700; color: var(--success);">
+                                    ${formatearMonto(t.total_ingresos || 0)}
+                                </div>
+                                <div style="font-size: 13px; color: var(--gray-600);">
+                                    ${t.total_vehiculos || 0} vehículos
+                                </div>
+                            </div>
+                        </div>
+                        <div style="background: var(--gray-200); height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div style="background: ${color}; height: 100%; width: ${porcentaje}%; transition: width 0.3s;"></div>
+                        </div>
+                        <div style="margin-top: 4px; text-align: center; font-size: 13px; color: var(--gray-600);">
+                            ${porcentaje.toFixed(1)}% del total
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function mostrarVehiculosPorTipo(porTipo) {
+            const container = document.getElementById('vehiculosPorTipo');
+
+            if (porTipo.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--gray-600);">No hay datos</p>';
+                return;
+            }
+
+            const maxVehiculos = Math.max(...porTipo.map(t => parseInt(t.total_vehiculos || 0)));
+
+            container.innerHTML = porTipo.map(t => {
+                const altura = maxVehiculos > 0 ? (parseInt(t.total_vehiculos) / maxVehiculos * 100) : 0;
+                const color = t.tipo_vehiculo === 'Sedán' ? 'var(--blue)' :
+                             t.tipo_vehiculo === 'Camioneta' ? 'var(--orange)' : 'var(--green)';
+
+                return `
+                    <div style="padding: 16px; text-align: center;">
+                        <div style="height: 150px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 12px;">
+                            <div style="
+                                width: 80px;
+                                height: ${altura}%;
+                                background: ${color};
+                                border-radius: 8px 8px 0 0;
+                                display: flex;
+                                align-items: flex-start;
+                                justify-content: center;
+                                padding-top: 8px;
+                                color: white;
+                                font-weight: 700;
+                                font-size: 18px;
+                                transition: height 0.3s;
+                            ">
+                                ${t.total_vehiculos || 0}
+                            </div>
+                        </div>
+                        <div style="font-weight: 600; color: var(--gray-800);">
+                            <i class="fas fa-${t.tipo_vehiculo === 'Sedán' ? 'car' : t.tipo_vehiculo === 'Camioneta' ? 'truck-pickup' : 'motorcycle'}"></i>
+                            ${t.tipo_vehiculo}
+                        </div>
+                        <div style="font-size: 13px; color: var(--gray-600); margin-top: 4px;">
+                            ${formatearMonto(t.total_ingresos || 0)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function cargarHistorial(fechaInicio, fechaFin) {
+            try {
+                const token = localStorage.getItem('parking_token');
+                const res = await fetch(
+                    `${API_URL}/reportes/historial?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+                const data = await res.json();
+
+                if (data.success) {
+                    mostrarHistorial(data.historial);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function mostrarHistorial(historial) {
+            const container = document.getElementById('tablaHistorial');
+
+            if (historial.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--gray-600);">No hay transacciones en este período</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Fecha/Hora Salida</th>
+                            <th>Placa</th>
+                            <th>Tipo</th>
+                            <th>Espacio</th>
+                            <th>Tiempo</th>
+                            <th>Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${historial.map(h => `
+                            <tr>
+                                <td>${formatearFecha(h.fecha_hora_salida)}</td>
+                                <td><strong>${h.placa}</strong></td>
+                                <td>
+                                    <i class="fas fa-${h.tipo_vehiculo === 'Sedán' ? 'car' : h.tipo_vehiculo === 'Camioneta' ? 'truck-pickup' : 'motorcycle'}"></i>
+                                    ${h.tipo_vehiculo}
+                                </td>
+                                <td><span class="badge badge-purple">${h.espacio}</span></td>
+                                <td>${h.tiempo_permanencia || 'N/A'}</td>
+                                <td><strong style="color: var(--success);">${formatearMonto(h.monto_final || 0)}</strong></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function cargarReporteHoy() {
+            const hoy = new Date().toISOString().split('T')[0];
+            document.getElementById('fechaInicio').value = hoy;
+            document.getElementById('fechaFin').value = hoy;
+            cargarReporte(hoy, hoy);
+        }
+
+        document.getElementById('filtrosForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const fechaInicio = document.getElementById('fechaInicio').value;
+            const fechaFin = document.getElementById('fechaFin').value;
+
+            if (!fechaInicio || !fechaFin) {
+                alert('Por favor selecciona ambas fechas');
+                return;
+            }
+
+            cargarReporte(fechaInicio, fechaFin);
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Establecer fechas por defecto (últimos 7 días)
+            const hoy = new Date();
+            const hace7Dias = new Date(hoy);
+            hace7Dias.setDate(hace7Dias.getDate() - 7);
+
+            document.getElementById('fechaFin').valueAsDate = hoy;
+            document.getElementById('fechaInicio').valueAsDate = hace7Dias;
+        });
+    </script>
+</body>
+</html>

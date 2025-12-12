@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Entrada - ParkFlow</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <i class="fas fa-square-parking sidebar-logo-icon"></i>
+                <span class="sidebar-logo-text">ParkFlow</span>
+            </div>
+
+            <div class="sidebar-user">
+                <div class="sidebar-user-avatar"><i class="fas fa-user"></i></div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name" id="userName">Usuario</div>
+                    <div class="sidebar-user-role" id="userRole">Rol</div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="sidebar-nav-section">MENÚ PRINCIPAL</div>
+                <a href="dashboard.html" class="sidebar-nav-item" data-page="dashboard">
+                    <i class="fas fa-home"></i><span>Dashboard</span>
+                </a>
+
+                <div class="sidebar-nav-section">OPERACIONES</div>
+                <a href="entrada.html" class="sidebar-nav-item active" data-page="entrada">
+                    <i class="fas fa-car-side"></i><span>Registrar Entrada</span>
+                </a>
+                <a href="salida.html" class="sidebar-nav-item" data-page="salida">
+                    <i class="fas fa-right-from-bracket"></i><span>Registrar Salida</span>
+                </a>
+                <a href="activos.html" class="sidebar-nav-item" data-page="activos">
+                    <i class="fas fa-list-check"></i><span>Vehículos Activos</span>
+                </a>
+                <a href="cupos.html" class="sidebar-nav-item" data-page="cupos">
+                    <i class="fas fa-square-parking"></i><span>Consultar Cupos</span>
+                </a>
+
+                <div class="sidebar-nav-section admin-only" style="display:none;">ADMINISTRACIÓN</div>
+                <a href="tarifas.html" class="sidebar-nav-item admin-only" data-page="tarifas" style="display:none;">
+                    <i class="fas fa-tags"></i><span>Gestión de Tarifas</span>
+                </a>
+                <a href="usuarios.html" class="sidebar-nav-item admin-only" data-page="usuarios" style="display:none;">
+                    <i class="fas fa-users"></i><span>Gestión de Usuarios</span>
+                </a>
+                <a href="reportes.html" class="sidebar-nav-item admin-only" data-page="reportes" style="display:none;">
+                    <i class="fas fa-chart-bar"></i><span>Reportes</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button onclick="toggleSidebar()" class="sidebar-toggle-btn">
+                    <i class="fas fa-bars"></i><span>Colapsar</span>
+                </button>
+                <button onclick="logout()" class="sidebar-logout-btn">
+                    <i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <div class="topbar">
+                <div>
+                    <div class="topbar-title">🚗 Registrar Entrada de Vehículo</div>
+                    <div class="topbar-subtitle">Complete los datos del vehículo que ingresa</div>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                    <!-- Formulario -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas fa-edit"></i> Datos del Vehículo
+                            </div>
+                        </div>
+
+                        <form id="entradaForm">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-hashtag"></i> Placa del Vehículo *
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="placa" 
+                                    class="form-input"
+                                    placeholder="Ej: ABC123"
+                                    required
+                                    style="text-transform: uppercase;"
+                                >
+                                <small style="color: var(--gray-600); font-size: 13px;">Ingrese la placa sin espacios ni guiones</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-car"></i> Tipo de Vehículo *
+                                </label>
+                                <select id="tipo_vehiculo" class="form-select" required>
+                                    <option value="">Seleccione un tipo</option>
+                                </select>
+                            </div>
+
+                            <div id="disponibilidadInfo" style="display:none; padding: 16px; background: var(--gray-50); border-radius: 12px; margin-bottom: 20px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                    <i class="fas fa-info-circle" style="color: var(--primary);"></i>
+                                    <strong>Disponibilidad:</strong>
+                                </div>
+                                <div id="disponibilidadTexto"></div>
+                            </div>
+
+                            <div id="mensaje" class="alert" style="display: none;"></div>
+
+                            <div style="display: flex; gap: 12px;">
+                                <button type="submit" class="btn btn-primary" id="registrarBtn" style="flex: 1;">
+                                    <i class="fas fa-plus-circle"></i> Registrar Entrada
+                                </button>
+                                <a href="dashboard.html" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Información -->
+                    <div>
+                        <!-- Espacios Disponibles -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i class="fas fa-square-parking"></i> Espacios Disponibles
+                                </div>
+                            </div>
+                            <div id="espaciosDisponibles">
+                                <div class="loading"><i class="fas fa-spinner"></i> Cargando...</div>
+                            </div>
+                        </div>
+
+                        <!-- Últimas Entradas -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i class="fas fa-history"></i> Últimas Entradas
+                                </div>
+                            </div>
+                            <div id="ultimasEntradas">
+                                <div class="loading"><i class="fas fa-spinner"></i> Cargando...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        let tiposVehiculo = [];
+        let disponibilidad = [];
+
+        async function cargarTiposVehiculo() {
+            try {
+                const token = localStorage.getItem('parking_token');
+                const response = await fetch(`${API_URL}/vehiculos/tipos`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    tiposVehiculo = data.tipos;
+                    const select = document.getElementById('tipo_vehiculo');
+                    data.tipos.forEach(tipo => {
+                        const option = document.createElement('option');
+                        option.value = tipo.id;
+                        option.textContent = tipo.nombre;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function cargarDisponibilidad() {
+            try {
+                const token = localStorage.getItem('parking_token');
+                const response = await fetch(`${API_URL}/vehiculos/estadisticas`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    disponibilidad = data.estadisticas.disponibilidad;
+                    mostrarEspaciosDisponibles(disponibilidad);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function mostrarEspaciosDisponibles(disponibilidad) {
+            const container = document.getElementById('espaciosDisponibles');
+            
+            container.innerHTML = disponibilidad.map(disp => {
+                const iconos = {
+                    'Sedán': 'fa-car',
+                    'Camioneta': 'fa-truck-pickup',
+                    'Motocicleta': 'fa-motorcycle'
+                };
+
+                const color = disp.disponibles > 5 ? 'var(--success)' : 
+                             disp.disponibles > 0 ? 'var(--warning)' : 'var(--error)';
+
+                return `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--gray-200);">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <i class="fas ${iconos[disp.tipo_vehiculo]}" style="font-size: 24px; color: var(--primary);"></i>
+                            <span style="font-weight: 600;">${disp.tipo_vehiculo}</span>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 28px; font-weight: 700; color: ${color};">${disp.disponibles}</div>
+                            <div style="font-size: 12px; color: var(--gray-600);">de ${disp.total_espacios}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function cargarUltimasEntradas() {
+            try {
+                const token = localStorage.getItem('parking_token');
+                const response = await fetch(`${API_URL}/vehiculos/activos`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const ultimas = data.vehiculos.slice(0, 5);
+                    mostrarUltimasEntradas(ultimas);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function mostrarUltimasEntradas(entradas) {
+            const container = document.getElementById('ultimasEntradas');
+            
+            if (entradas.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--gray-600); padding: 20px;">No hay entradas recientes</p>';
+                return;
+            }
+
+            container.innerHTML = entradas.map(entrada => `
+                <div style="padding: 12px 0; border-bottom: 1px solid var(--gray-200);">
+                    <div style="display: flex; justify-content: space-between;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 16px;">${entrada.placa}</div>
+                            <div style="font-size: 13px; color: var(--gray-600);">
+                                <i class="fas fa-car"></i> ${entrada.tipo_vehiculo}
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="badge badge-purple">${entrada.espacio || 'N/A'}</span>
+                            <div style="font-size: 12px; color: var(--gray-600); margin-top: 4px;">
+                                ${formatearFecha(entrada.fecha_hora_entrada)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('tipo_vehiculo').addEventListener('change', function() {
+            const tipoId = parseInt(this.value);
+            const infoDiv = document.getElementById('disponibilidadInfo');
+            const textoDiv = document.getElementById('disponibilidadTexto');
+
+            if (!tipoId) {
+                infoDiv.style.display = 'none';
+                return;
+            }
+
+            const disp = disponibilidad.find(d => d.id === tipoId);
+            
+            if (disp) {
+                infoDiv.style.display = 'block';
+                
+                if (disp.disponibles > 0) {
+                    textoDiv.innerHTML = `<span style="color: var(--success); font-weight: 600;">✓ Hay ${disp.disponibles} espacio(s) disponible(s)</span>`;
+                    document.getElementById('registrarBtn').disabled = false;
+                } else {
+                    textoDiv.innerHTML = `<span style="color: var(--error); font-weight: 600;">✗ No hay espacios disponibles</span>`;
+                    document.getElementById('registrarBtn').disabled = true;
+                }
+            }
+        });
+
+        document.getElementById('placa').addEventListener('input', function() {
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
+
+        document.getElementById('entradaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const placa = document.getElementById('placa').value.trim();
+            const tipo_vehiculo_id = parseInt(document.getElementById('tipo_vehiculo').value);
+            const mensaje = document.getElementById('mensaje');
+            const btn = document.getElementById('registrarBtn');
+
+            mensaje.style.display = 'none';
+
+            if (!placa || !tipo_vehiculo_id) {
+                mensaje.textContent = 'Por favor complete todos los campos';
+                mensaje.className = 'alert alert-error';
+                mensaje.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
+
+            try {
+                const token = localStorage.getItem('parking_token');
+                const response = await fetch(`${API_URL}/vehiculos/entrada`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ placa, tipo_vehiculo_id })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    mensaje.textContent = `¡Entrada registrada! Espacio asignado: ${data.registro.espacio}`;
+                    mensaje.className = 'alert alert-success';
+                    mensaje.style.display = 'block';
+                    
+                    document.getElementById('entradaForm').reset();
+                    document.getElementById('disponibilidadInfo').style.display = 'none';
+
+                    await Promise.all([
+                        cargarDisponibilidad(),
+                        cargarUltimasEntradas()
+                    ]);
+
+                    mensaje.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    mensaje.textContent = data.message || 'Error al registrar entrada';
+                    mensaje.className = 'alert alert-error';
+                    mensaje.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mensaje.textContent = 'Error de conexión';
+                mensaje.className = 'alert alert-error';
+                mensaje.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-plus-circle"></i> Registrar Entrada';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            Promise.all([
+                cargarTiposVehiculo(),
+                cargarDisponibilidad(),
+                cargarUltimasEntradas()
+            ]);
+
+            setInterval(() => {
+                cargarDisponibilidad();
+                cargarUltimasEntradas();
+            }, 30000);
+        });
+    </script>
+</body>
+</html>

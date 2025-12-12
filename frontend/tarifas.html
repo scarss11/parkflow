@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Tarifas - ParkFlow</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <i class="fas fa-square-parking sidebar-logo-icon"></i>
+                <span class="sidebar-logo-text">ParkFlow</span>
+            </div>
+            <div class="sidebar-user">
+                <div class="sidebar-user-avatar"><i class="fas fa-user"></i></div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name" id="userName">Usuario</div>
+                    <div class="sidebar-user-role" id="userRole">Rol</div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-nav-section">MENÚ PRINCIPAL</div>
+                <a href="dashboard.html" class="sidebar-nav-item" data-page="dashboard">
+                    <i class="fas fa-home"></i><span>Dashboard</span>
+                </a>
+                <div class="sidebar-nav-section">OPERACIONES</div>
+                <a href="entrada.html" class="sidebar-nav-item" data-page="entrada">
+                    <i class="fas fa-car-side"></i><span>Registrar Entrada</span>
+                </a>
+                <a href="salida.html" class="sidebar-nav-item" data-page="salida">
+                    <i class="fas fa-right-from-bracket"></i><span>Registrar Salida</span>
+                </a>
+                <a href="activos.html" class="sidebar-nav-item" data-page="activos">
+                    <i class="fas fa-list-check"></i><span>Vehículos Activos</span>
+                </a>
+                <a href="cupos.html" class="sidebar-nav-item" data-page="cupos">
+                    <i class="fas fa-square-parking"></i><span>Consultar Cupos</span>
+                </a>
+                <div class="sidebar-nav-section admin-only">ADMINISTRACIÓN</div>
+                <a href="tarifas.html" class="sidebar-nav-item admin-only active" data-page="tarifas">
+                    <i class="fas fa-tags"></i><span>Gestión de Tarifas</span>
+                </a>
+                <a href="usuarios.html" class="sidebar-nav-item admin-only" data-page="usuarios">
+                    <i class="fas fa-users"></i><span>Gestión de Usuarios</span>
+                </a>
+                <a href="reportes.html" class="sidebar-nav-item admin-only" data-page="reportes">
+                    <i class="fas fa-chart-bar"></i><span>Reportes</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button onclick="toggleSidebar()" class="sidebar-toggle-btn">
+                    <i class="fas fa-bars"></i><span>Colapsar</span>
+                </button>
+                <button onclick="logout()" class="sidebar-logout-btn">
+                    <i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="topbar">
+                <div>
+                    <div class="topbar-title">🏷️ Gestión de Tarifas</div>
+                    <div class="topbar-subtitle">Configurar tarifas por tipo de vehículo</div>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas fa-list"></i> Tarifas Configuradas
+                            </div>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Tipo Vehículo</th>
+                                    <th>Tipo Cobro</th>
+                                    <th>Valor</th>
+                                    <th>Vigencia</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaTarifas">
+                                <tr><td colspan="5" class="loading"><i class="fas fa-spinner"></i> Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas fa-plus-circle"></i> <span id="formTitulo">Nueva Tarifa</span>
+                            </div>
+                        </div>
+                        <form id="tarifaForm">
+                            <input type="hidden" id="tarifaId">
+                            
+                            <div class="form-group">
+                                <label class="form-label">Tipo de Vehículo</label>
+                                <select id="tipoVehiculo" class="form-select" required>
+                                    <option value="">Seleccione...</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Tipo de Cobro</label>
+                                <select id="tipoCobro" class="form-select" required>
+                                    <option value="POR_MINUTO">Por Minuto</option>
+                                    <option value="POR_HORA">Por Hora</option>
+                                    <option value="POR_DIA">Por Día</option>
+                                    <option value="FRACCION">Fracción</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Valor ($)</label>
+                                <input type="number" id="valor" class="form-input" placeholder="5000" required min="0">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Fecha Inicio</label>
+                                <input type="date" id="fechaInicio" class="form-input" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Fecha Fin (opcional)</label>
+                                <input type="date" id="fechaFin" class="form-input">
+                            </div>
+
+                            <div id="mensaje" class="alert" style="display: none;"></div>
+
+                            <div style="display: flex; gap: 8px;">
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                                    <i class="fas fa-save"></i> Guardar
+                                </button>
+                                <button type="button" onclick="cancelarEdicion()" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        let tarifas = [];
+        let tiposVehiculo = [];
+
+        async function cargarTiposVehiculo() {
+            try {
+                const token = localStorage.getItem('parking_token');
+                const res = await fetch(`${API_URL}/vehiculos/tipos`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    tiposVehiculo = data.tipos;
+                    const select = document.getElementById('tipoVehiculo');
+                    data.tipos.forEach(tipo => {
+                        select.innerHTML += `<option value="${tipo.id}">${tipo.nombre}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function cargarTarifas() {
+            try {
+                const token = localStorage.getItem('parking_token');
+                const res = await fetch(`${API_URL}/tarifas`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    tarifas = data.tarifas;
+                    mostrarTarifas(tarifas);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('tablaTarifas').innerHTML = 
+                    '<tr><td colspan="5" style="text-align: center; color: var(--error);">Error al cargar tarifas</td></tr>';
+            }
+        }
+
+        function mostrarTarifas(tarifas) {
+            const tbody = document.getElementById('tablaTarifas');
+
+            if (tarifas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--gray-600);">No hay tarifas configuradas</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = tarifas.map(t => `
+                <tr>
+                    <td><strong>${t.tipo_vehiculo_nombre || 'N/A'}</strong></td>
+                    <td><span class="badge badge-purple">${t.tipo_cobro}</span></td>
+                    <td><strong style="color: var(--success);">${formatearMonto(t.valor)}</strong></td>
+                    <td>
+                        <div style="font-size: 13px;">
+                            Desde: ${new Date(t.fecha_inicio).toLocaleDateString()}<br>
+                            ${t.fecha_fin ? 'Hasta: ' + new Date(t.fecha_fin).toLocaleDateString() : 'Sin límite'}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 4px;">
+                            <button onclick="editarTarifa(${t.id})" class="btn btn-sm btn-secondary" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="eliminarTarifa(${t.id})" class="btn btn-sm" style="background: var(--error); color: white;" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('tarifaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('tarifaId').value;
+            const datos = {
+                tipo_vehiculo_id: parseInt(document.getElementById('tipoVehiculo').value),
+                tipo_cobro: document.getElementById('tipoCobro').value,
+                valor: parseFloat(document.getElementById('valor').value),
+                fecha_inicio: document.getElementById('fechaInicio').value,
+                fecha_fin: document.getElementById('fechaFin').value || null
+            };
+
+            const mensaje = document.getElementById('mensaje');
+            mensaje.style.display = 'none';
+
+            try {
+                const token = localStorage.getItem('parking_token');
+                const url = id ? `${API_URL}/tarifas/${id}` : `${API_URL}/tarifas`;
+                const method = id ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(datos)
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    mensaje.textContent = id ? 'Tarifa actualizada exitosamente' : 'Tarifa creada exitosamente';
+                    mensaje.className = 'alert alert-success';
+                    mensaje.style.display = 'block';
+
+                    this.reset();
+                    document.getElementById('tarifaId').value = '';
+                    document.getElementById('formTitulo').textContent = 'Nueva Tarifa';
+
+                    await cargarTarifas();
+                } else {
+                    mensaje.textContent = data.message || 'Error al guardar tarifa';
+                    mensaje.className = 'alert alert-error';
+                    mensaje.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mensaje.textContent = 'Error de conexión';
+                mensaje.className = 'alert alert-error';
+                mensaje.style.display = 'block';
+            }
+        });
+
+        function editarTarifa(id) {
+            const tarifa = tarifas.find(t => t.id === id);
+            if (!tarifa) return;
+
+            document.getElementById('tarifaId').value = tarifa.id;
+            document.getElementById('tipoVehiculo').value = tarifa.tipo_vehiculo_id;
+            document.getElementById('tipoCobro').value = tarifa.tipo_cobro;
+            document.getElementById('valor').value = tarifa.valor;
+            document.getElementById('fechaInicio').value = tarifa.fecha_inicio.split('T')[0];
+            document.getElementById('fechaFin').value = tarifa.fecha_fin ? tarifa.fecha_fin.split('T')[0] : '';
+            document.getElementById('formTitulo').textContent = 'Editar Tarifa';
+
+            document.getElementById('tarifaForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function eliminarTarifa(id) {
+            if (!confirm('¿Está seguro de eliminar esta tarifa?')) return;
+
+            try {
+                const token = localStorage.getItem('parking_token');
+                const res = await fetch(`${API_URL}/tarifas/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('Tarifa eliminada exitosamente');
+                    await cargarTarifas();
+                } else {
+                    alert(data.message || 'Error al eliminar tarifa');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión');
+            }
+        }
+
+        function cancelarEdicion() {
+            document.getElementById('tarifaForm').reset();
+            document.getElementById('tarifaId').value = '';
+            document.getElementById('formTitulo').textContent = 'Nueva Tarifa';
+            document.getElementById('mensaje').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            Promise.all([cargarTiposVehiculo(), cargarTarifas()]);
+
+            // Fecha de inicio por defecto: hoy
+            document.getElementById('fechaInicio').valueAsDate = new Date();
+        });
+    </script>
+</body>
+</html>
