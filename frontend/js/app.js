@@ -2,7 +2,10 @@
 // PARKFLOW - JavaScript Compartido
 // ========================================
 
-const API_URL = 'http://localhost:3000/api';
+// *** CAMBIO REALIZADO AQUÍ ***
+const API_URL = 'https://parkflow-production.up.railway.app/api';
+// *** URL DE PRODUCCIÓN DE RAILWAY ***
+
 let sidebarCollapsed = false;
 
 // Toggle sidebar (solo icono al colapsar)
@@ -27,11 +30,11 @@ function logout() {
 // Marcar página activa con sombreado
 function marcarPaginaActiva() {
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'dashboard';
-    
+
     document.querySelectorAll('.sidebar-nav-item').forEach(item => {
         item.classList.remove('active');
         const page = item.getAttribute('data-page') || item.getAttribute('href').replace('.html', '');
-        
+
         if (page === currentPage || page === currentPage + '.html') {
             item.classList.add('active');
         }
@@ -39,10 +42,10 @@ function marcarPaginaActiva() {
 }
 
 // Inicialización en cada página
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Verificar autenticación
     const user = JSON.parse(localStorage.getItem('parking_user') || '{}');
-    
+
     if (!user.nombre && !window.location.pathname.includes('index.html')) {
         window.location.href = 'index.html';
         return;
@@ -51,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Actualizar info de usuario
     const userName = document.getElementById('userName');
     const userRole = document.getElementById('userRole');
-    
+
     if (userName) userName.textContent = user.nombre || 'Usuario';
     if (userRole) userRole.textContent = user.rol || 'Rol';
 
